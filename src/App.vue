@@ -245,7 +245,7 @@ const executionLogs = ref<ExecutionLog[]>([])
 
 // 组件引用和自动模式
 const memoryAllocatorRef = ref<InstanceType<typeof MemoryAllocator> | null>(null)
-const autoTimer = ref<NodeJS.Timeout | null>(null)
+const autoTimer = ref<number | null>(null)
 const isAutoMode = ref(false)
 
 let jobIdCounter = 1
