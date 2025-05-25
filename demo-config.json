@@ -1,0 +1,69 @@
+{
+  "name": "演示配置",
+  "description": "展示不同内存分配算法的基础演示",
+  "memorySize": 1024,
+  "algorithm": "first-fit",
+  "jobs": [
+    {
+      "name": "P1",
+      "size": 200,
+      "description": "第一个进程"
+    },
+    {
+      "name": "P2",
+      "size": 150,
+      "description": "第二个进程"
+    },
+    {
+      "name": "P3",
+      "size": 300,
+      "description": "第三个进程"
+    },
+    {
+      "name": "P4",
+      "size": 100,
+      "description": "第四个进程"
+    },
+    {
+      "name": "P5",
+      "size": 250,
+      "description": "第五个进程"
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "碎片化测试",
+      "description": "测试内存碎片化情况",
+      "steps": [
+        "分配P1 (200KB)",
+        "分配P2 (150KB)", 
+        "分配P3 (300KB)",
+        "释放P2",
+        "分配P4 (100KB)",
+        "分配P5 (250KB)"
+      ]
+    }
+  ],
+  "expectedResults": {
+    "firstFit": {
+      "description": "首次适应算法结果",
+      "fragmentationRatio": "约15%",
+      "allocationSuccess": "100%",
+      "largestFreeBlock": "174KB"
+    },
+    "bestFit": {
+      "description": "最佳适应算法结果", 
+      "fragmentationRatio": "约12%",
+      "allocationSuccess": "100%",
+      "largestFreeBlock": "174KB"
+    },
+    "worstFit": {
+      "description": "最坏适应算法结果",
+      "fragmentationRatio": "约18%", 
+      "allocationSuccess": "100%",
+      "largestFreeBlock": "174KB"
+    }
+  },
+  "timestamp": "2025-01-25T06:18:00.000Z",
+  "version": "1.0.0"
+}

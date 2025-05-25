@@ -1,0 +1,49 @@
+{
+  "name": "os-memory-visual-simulator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "操作系统内存可视化模拟器 - 交互式内存分配算法演示工具",
+  "keywords": [
+    "operating-system",
+    "memory-management",
+    "visualization",
+    "algorithm",
+    "education",
+    "vue3",
+    "typescript"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview --host",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "echo 'Linting code...'",
+    "clean": "rm -rf dist node_modules/.vite",
+    "serve": "npm run build && npm run preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/tsconfig": "^0.7.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.8"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/os-memory-visual-simulator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/os-memory-visual-simulator/issues"
+  },
+  "homepage": "https://github.com/your-username/os-memory-visual-simulator#readme"
+}
