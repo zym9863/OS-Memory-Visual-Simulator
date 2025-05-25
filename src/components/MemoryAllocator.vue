@@ -142,7 +142,7 @@
           @change="importConfiguration"
           style="display: none"
         />
-        <button @click="$refs.fileInput.click()">导入配置</button>
+        <button @click="handleFileInputClick">导入配置</button>
       </div>
     </div>
   </div>
@@ -151,10 +151,50 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 
+// 数据类型定义
+interface Job {
+  id: number
+  name: string
+  size: number
+  color?: string
+}
+
+interface MemoryBlock {
+  startAddress: number
+  size: number
+  allocated: boolean
+  jobId?: number
+  jobName?: string
+  color?: string
+  highlight?: boolean
+}
+
+interface MemoryState {
+  action: string
+  timestamp: string
+  memoryBlocks: MemoryBlock[]
+  allocatedJobs: Job[]
+  memorySize: number
+  algorithm: string
+}
+
+interface TestScenario {
+  name: string
+  description: string
+  jobs: { name: string; size: number }[]
+  memorySize?: number
+  algorithm?: string
+}
+
+interface AutoModeParams {
+  scenario: TestScenario
+  speed: number
+}
+
 // Props
 interface Props {
-  memoryBlocks: any[]
-  allocatedJobs: any[]
+  memoryBlocks: MemoryBlock[]
+  allocatedJobs: Job[]
   memorySize: number
   currentAlgorithm: string
   isRunning: boolean
@@ -163,22 +203,28 @@ interface Props {
 const props = defineProps<Props>()
 
 // Emits
-const emit = defineEmits(['load-scenario', 'start-auto', 'stop-auto', 'restore-state'])
+const emit = defineEmits<{
+  'load-scenario': [scenario: TestScenario]
+  'start-auto': [params: AutoModeParams]
+  'stop-auto': []
+  'restore-state': [state: MemoryState]
+}>()
 
 // 响应式数据
 const autoSpeed = ref(1000)
 const isAutoMode = ref(false)
-const currentScenario = ref(null)
+const currentScenario = ref<TestScenario | null>(null)
 const currentHistoryIndex = ref(0)
-const memoryHistory = ref([])
-const performanceChart = ref(null)
+const memoryHistory = ref<MemoryState[]>([])
+const performanceChart = ref<HTMLCanvasElement | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // 性能统计
-const allocationTimes = ref([])
-const allocationResults = ref([])
+const allocationTimes = ref<number[]>([])
+const allocationResults = ref<boolean[]>([])
 
 // 测试场景
-const testScenarios = ref([
+const testScenarios = ref<TestScenario[]>([
   {
     name: '小任务密集',
     description: '多个小任务同时申请内存，测试碎片化情况',
@@ -278,13 +324,13 @@ const canStartAuto = computed(() => {
 })
 
 // 方法
-const loadScenario = (scenario) => {
+const loadScenario = (scenario: TestScenario) => {
   currentScenario.value = scenario
   emit('load-scenario', scenario)
 }
 
 const startAutoMode = () => {
-  if (!canStartAuto.value) return
+  if (!canStartAuto.value || !currentScenario.value) return
   
   isAutoMode.value = true
   emit('start-auto', {
@@ -299,7 +345,7 @@ const stopAutoMode = () => {
 }
 
 const saveCurrentState = (action: string) => {
-  const state = {
+  const state: MemoryState = {
     action,
     timestamp: new Date().toLocaleTimeString(),
     memoryBlocks: JSON.parse(JSON.stringify(props.memoryBlocks)),
@@ -398,21 +444,29 @@ ${props.memoryBlocks.map((block, index) =>
   URL.revokeObjectURL(url)
 }
 
-const importConfiguration = (event) => {
-  const file = event.target.files[0]
+const handleFileInputClick = () => {
+  fileInput.value?.click()
+}
+
+const importConfiguration = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
   if (!file) return
   
   const reader = new FileReader()
   reader.onload = (e) => {
     try {
-      const data = JSON.parse(e.target.result)
-      emit('load-scenario', {
-        name: '导入配置',
-        description: `导入于 ${new Date(data.timestamp).toLocaleString()}`,
-        jobs: data.jobs,
-        memorySize: data.memorySize,
-        algorithm: data.algorithm
-      })
+      const result = e.target?.result
+      if (typeof result === 'string') {
+        const data = JSON.parse(result)
+        emit('load-scenario', {
+          name: '导入配置',
+          description: `导入于 ${new Date(data.timestamp).toLocaleString()}`,
+          jobs: data.jobs,
+          memorySize: data.memorySize,
+          algorithm: data.algorithm
+        })
+      }
     } catch (error) {
       console.error('导入配置失败:', error)
     }
@@ -426,6 +480,8 @@ const drawPerformanceChart = () => {
   if (!performanceChart.value) return
   
   const ctx = performanceChart.value.getContext('2d')
+  if (!ctx) return
+  
   ctx.clearRect(0, 0, 400, 200)
   
   // 简单的柱状图示例

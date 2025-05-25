@@ -207,6 +207,28 @@ interface ExecutionLog {
   type: 'success' | 'error' | 'info'
 }
 
+interface MemoryState {
+  action: string
+  timestamp: string
+  memoryBlocks: MemoryBlock[]
+  allocatedJobs: Job[]
+  memorySize: number
+  algorithm: string
+}
+
+interface TestScenario {
+  name: string
+  description: string
+  jobs: { name: string; size: number }[]
+  memorySize?: number
+  algorithm?: string
+}
+
+interface AutoModeParams {
+  scenario: TestScenario
+  speed: number
+}
+
 // 响应式数据
 const memorySize = ref(1024)
 const allocationAlgorithm = ref('first-fit')
@@ -222,8 +244,8 @@ const memoryBlocks = ref<MemoryBlock[]>([])
 const executionLogs = ref<ExecutionLog[]>([])
 
 // 组件引用和自动模式
-const memoryAllocatorRef = ref(null)
-const autoTimer = ref(null)
+const memoryAllocatorRef = ref<InstanceType<typeof MemoryAllocator> | null>(null)
+const autoTimer = ref<NodeJS.Timeout | null>(null)
 const isAutoMode = ref(false)
 
 let jobIdCounter = 1
@@ -513,7 +535,7 @@ const addLog = (message: string, type: 'success' | 'error' | 'info') => {
 }
 
 // MemoryAllocator 组件事件处理
-const handleLoadScenario = (scenario) => {
+const handleLoadScenario = (scenario: TestScenario) => {
   // 清空当前作业队列
   jobQueue.value = []
   
@@ -542,7 +564,7 @@ const handleLoadScenario = (scenario) => {
   }
 }
 
-const handleStartAuto = ({ scenario, speed }) => {
+const handleStartAuto = ({ scenario, speed }: AutoModeParams) => {
   if (!scenario || scenario.jobs.length === 0) return
   
   isAutoMode.value = true
@@ -591,7 +613,7 @@ const handleStopAuto = () => {
   addLog('自动模式已停止', 'info')
 }
 
-const handleRestoreState = (state) => {
+const handleRestoreState = (state: MemoryState) => {
   // 恢复内存状态
   memoryBlocks.value = JSON.parse(JSON.stringify(state.memoryBlocks))
   allocatedJobs.value = JSON.parse(JSON.stringify(state.allocatedJobs))
